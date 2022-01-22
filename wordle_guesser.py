@@ -25,6 +25,9 @@ def intersection(list_1, list_2):
 
 
 def prune(word_list, feedback):
+    """
+    Shrink the list based on the puzzle's current state, return the pruned list
+    """
     new_list = []
     for word in word_list:
         test = split(word)
@@ -46,6 +49,9 @@ def prune(word_list, feedback):
 
 
 def guess(word_list, verbose):
+    """
+    Figure out the best guess word based on letter frequency in the word list
+    """
     frequency_list = {}
     for word in word_list:
         letters = split(word)
@@ -80,6 +86,9 @@ def run(word_list, feedback, verbose):
 
 
 def get_input():
+    """
+    Receive the state of the game from user input after a guess
+    """
     new_black_letters = []
     while True:
         try:
