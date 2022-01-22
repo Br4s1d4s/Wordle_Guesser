@@ -1,4 +1,12 @@
+# @ TODO: verbose mode CLI option: displays the status of the search, current
+#         letter frequencies, etc.
+# @ TODO: clean and sanitize input()throw an error instead of crashing if
+#         entire wordlist is pruned.
+# @ TODO: simulate with an initial word
+
 from collections import OrderedDict
+import sys
+
 
 class feedback:
     def __init__(self, black_letters, yellow_letters, green_letters):
@@ -6,14 +14,20 @@ class feedback:
         feedback.yellow_letters = yellow_letters
         feedback.green_letters = green_letters
 
+
 def split(word):
     return [char for char in word]
+
 
 def intersection(list_1, list_2):
     list_3 = [value for value in list_1 if value in list_2]
     return list_3
 
+
 def prune(word_list, feedback):
+    """
+    Shrink the list based on the puzzle's current state, return the pruned list
+    """
     new_list = []
     for word in word_list:
         test = split(word)
@@ -33,7 +47,11 @@ def prune(word_list, feedback):
             new_list.append(word)
     return new_list
 
-def guess(word_list):
+
+def guess(word_list, verbose):
+    """
+    Figure out the best guess word based on letter frequency in the word list
+    """
     frequency_list = {}
     for word in word_list:
         letters = split(word)
@@ -42,6 +60,13 @@ def guess(word_list):
                 frequency_list[char] += 1
             else:
                 frequency_list[char] = 1
+
+    if verbose:
+        print("Top 10 letters with # of appearances:")
+        sorted_freq = sorted(frequency_list.items(),
+                             key=lambda x: x[1], reverse=True)
+        for i in range(10):
+            print(sorted_freq[i])
     score = 0
     for word in word_list:
         letters = list(OrderedDict.fromkeys(split(word)).keys())
@@ -53,12 +78,17 @@ def guess(word_list):
             guess = word
     return guess
 
-def run(word_list, feedback):
+
+def run(word_list, feedback, verbose):
     new_list = prune(word_list, feedback)
-    new_guess = guess(new_list)
+    new_guess = guess(new_list, verbose)
     return new_list, new_guess
 
-def get_input(): 
+
+def get_input():
+    """
+    Receive the state of the game from user input after a guess
+    """
     new_black_letters = []
     while True:
         try:
@@ -67,7 +97,7 @@ def get_input():
                 break
             new_black_letters.append(letter)
         except Exception as e:
-            print("Error:",e)
+            print("Error:", e)
 
     print("black letters are  ", new_black_letters)
 
@@ -78,9 +108,9 @@ def get_input():
             if letter == "done":
                 break
             position = int(input("input yellow letter's position "))
-            new_yellow_letters[position] = letter       
+            new_yellow_letters[position] = letter
         except Exception as e:
-            print("Error:",e)
+            print("Error:", e)
 
     print("yellow letters are  ", new_yellow_letters)
 
@@ -91,9 +121,9 @@ def get_input():
             if letter == "done":
                 break
             position = int(input("input green letter's position "))
-            new_green_letters[position] = letter       
+            new_green_letters[position] = letter
         except Exception as e:
-            print("Error:",e)
+            print("Error:", e)
 
     print("green letters are  ", new_green_letters)
 
@@ -103,13 +133,32 @@ def get_input():
 
     return feedback
 
-with open('wordle_word_list.txt') as f:
-    Strings = f.read()
 
-word_list = Strings.split()
+def simulate(the_answer):
+    pass
 
-while len(word_list) > 1:
-    feedback = get_input()
 
-    word_list, new_guess = run(word_list, feedback)
-    print(new_guess)
+if __name__ == "__main__":
+
+    verbose = False
+
+    if ((len(sys.argv)) > 1):
+        if (sys.argv[1] == "-v"):
+            verbose = True
+            print("Running in Verbose Mode\n")
+
+    with open('wordle_word_list.txt') as f:
+        Strings = f.read()
+
+        word_list = Strings.split()
+
+    iterations = 0
+    while len(word_list) > 1:
+        if verbose:
+            print("Beginning pass #: " + str(iterations + 1))
+        feedback = get_input()
+
+        word_list, new_guess = run(word_list, feedback, verbose)
+        if verbose:
+            print("Current wordlist length: " + str(len(word_list)))
+        print(new_guess)
