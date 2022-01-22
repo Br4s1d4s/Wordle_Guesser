@@ -1,6 +1,8 @@
-# @ TODO: verbose mode CLI option
+# @ TODO: verbose mode CLI option: displays the status of the search, current
+#         letter frequencies, etc.
 # @ TODO: clean and sanitize input()throw an error instead of crashing if
 #         entire wordlist is pruned.
+# @ TODO: simulate with an initial word
 
 from collections import OrderedDict
 import sys
@@ -43,7 +45,7 @@ def prune(word_list, feedback):
     return new_list
 
 
-def guess(word_list):
+def guess(word_list, verbose):
     frequency_list = {}
     for word in word_list:
         letters = split(word)
@@ -52,6 +54,13 @@ def guess(word_list):
                 frequency_list[char] += 1
             else:
                 frequency_list[char] = 1
+
+    if verbose:
+        print("Top 10 letters with # of appearances:")
+        sorted_freq = sorted(frequency_list.items(),
+                             key=lambda x: x[1], reverse=True)
+        for i in range(10):
+            print(sorted_freq[i])
     score = 0
     for word in word_list:
         letters = list(OrderedDict.fromkeys(split(word)).keys())
@@ -64,9 +73,9 @@ def guess(word_list):
     return guess
 
 
-def run(word_list, feedback):
+def run(word_list, feedback, verbose):
     new_list = prune(word_list, feedback)
-    new_guess = guess(new_list)
+    new_guess = guess(new_list, verbose)
     return new_list, new_guess
 
 
@@ -116,6 +125,10 @@ def get_input():
     return feedback
 
 
+def simulate(the_answer):
+    pass
+
+
 if __name__ == "__main__":
 
     verbose = False
@@ -130,8 +143,13 @@ if __name__ == "__main__":
 
         word_list = Strings.split()
 
+    iterations = 0
     while len(word_list) > 1:
+        if verbose:
+            print("Beginning pass #: " + str(iterations + 1))
         feedback = get_input()
 
-        word_list, new_guess = run(word_list, feedback)
+        word_list, new_guess = run(word_list, feedback, verbose)
+        if verbose:
+            print("Current wordlist length: " + str(len(word_list)))
         print(new_guess)
