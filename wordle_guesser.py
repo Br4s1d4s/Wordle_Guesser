@@ -66,7 +66,10 @@ def guess(word_list, verbose):
         sorted_freq = sorted(frequency_list.items(),
                              key=lambda x: x[1], reverse=True)
         for i in range(10):
-            print(sorted_freq[i])
+            try:
+                print(sorted_freq[i])
+            except:
+                break
     score = 0
     for word in word_list:
         letters = list(OrderedDict.fromkeys(split(word)).keys())
