@@ -52,18 +52,27 @@ current position, does the word not contain green letters in their current posit
 does the word contain any double letters from the yellow list and black list, and the
 same from the green list and black list.
 """
+
 def prune(word_list, Feedback):
     """
     Shrink the list based on the puzzle's current state, return the pruned list
     """
     new_list = []
+    double_letters_yellow = intersection(Feedback.black_letters, Feedback.yellow_letters.values())
+    double_letters_green = intersection(Feedback.black_letters, Feedback.green_letters.values())
     for word in word_list:
         test = split(word)
+        double_letter_test_yellow = True
+        double_letter_test_green = True
         black_test = not intersection(test, Feedback.black_letters)
         yellow_test_1 = True
         yellow_test_2 = True
         green_test = True
-        if sorted(intersection(test, Feedback.yellow_letters.values())) != sorted(feedback.yellow_letters.values()):
+        if double_letters_yellow and test.count(double_letters_yellow) > 1:
+            double_letter_test_yellow = False 
+        if double_letters_green and test.count(double_letters_green) > 1:
+            double_letter_test_green = False
+        if sorted(intersection(test, Feedback.yellow_letters.values())) != sorted(Feedback.yellow_letters.values()):
             yellow_test_1 = False
         for position in Feedback.yellow_letters:
             if test[position] == Feedback.yellow_letters[position]:
@@ -71,13 +80,12 @@ def prune(word_list, Feedback):
         for position in Feedback.green_letters:
             if test[position] != Feedback.green_letters[position]:
                 green_test = False
-        if black_test and yellow_test_1 and yellow_test_2 and green_test:
+        if double_letter_test_yellow and double_letter_test_green and black_test and yellow_test_1 and yellow_test_2 and green_test:
             new_list.append(word)
-        if len(new_list) == 0:
-            print("letter criteria not met by members of current list")
-            sys.exit()
+    if len(new_list) == 0:
+        print("letter criteria not met by members of current list")
+        sys.exit()
     return new_list
-
 
 """
 The guess function uses a naive gradient descent to pick the word with the most
@@ -88,6 +96,7 @@ Then, the function scores each word for each unique letter from that list.
 There is a possibility that this approach is not ideal for Wordles with double letters,
 but the algorithm will find them.
 """
+
 def guess(word_list, verbose):
     """
     Figure out the best guess word based on letter frequency in the word list
