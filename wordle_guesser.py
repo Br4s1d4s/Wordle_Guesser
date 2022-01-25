@@ -1,6 +1,6 @@
 # @ TODO: simulate with an initial word
-# @ TODO: help command line flag
-# @ TODO: check inputs for char and int types
+# @ TODO: add the ability to use a different word list using a flag
+# @ TODO: check inputs int types
 
 """
 This program is a Wordle guess optimizer. 
@@ -43,6 +43,14 @@ def intersection(list_1, list_2):
     list_3 = [value for value in list_1 if value in list_2]
     return list_3
 
+"""
+This function subtracts list_2 from list_1. This facilitates removing black letters for
+doubled letters from the black letter list.
+"""
+def subtraction(list_1, list_2):
+    list_3 = [value for value in list_1 if not value in list_2]
+    return list_3
+
 
 """
 The prune step removes any word from the reamaining word list using 6 tests, each
@@ -60,19 +68,26 @@ def prune(word_list, Feedback):
     new_list = []
     double_letters_yellow = intersection(Feedback.black_letters, Feedback.yellow_letters.values())
     double_letters_green = intersection(Feedback.black_letters, Feedback.green_letters.values())
+    black_letters = subtraction(subtraction(Feedback.black_letters, Feedback.yellow_letters.values()), Feedback.green_letters.values())
     for word in word_list:
         test = split(word)
         double_letter_test_yellow = True
         double_letter_test_green = True
-        black_test = not intersection(test, Feedback.black_letters)
+        black_test = True
         yellow_test_1 = True
         yellow_test_2 = True
         green_test = True
-        if double_letters_yellow and test.count(double_letters_yellow) > 1:
-            double_letter_test_yellow = False 
-        if double_letters_green and test.count(double_letters_green) > 1:
-            double_letter_test_green = False
-        if sorted(intersection(test, Feedback.yellow_letters.values())) != sorted(Feedback.yellow_letters.values()):
+        if intersection(test, black_letters):
+            black_test = False
+        if double_letters_yellow:
+            for char in double_letters_yellow:
+                if test.count(char) > 1:
+                    double_letter_test_yellow = False 
+        if double_letters_green:
+            for char in double_letters_green:
+                if test.count(char) > 1:
+                    double_letter_test_green = False
+        if Feedback.yellow_letters.values() and not intersection(test, Feedback.yellow_letters.values()):
             yellow_test_1 = False
         for position in Feedback.yellow_letters:
             if test[position] == Feedback.yellow_letters[position]:
@@ -146,13 +161,16 @@ def get_input():
     """
     new_black_letters = []
     while True:
+        letter = " "
         try:
             letter = input("input a black letter or type 'done' ")
             if letter == "done":
                 break
             elif letter == "quit":
                 sys.exit()
-            new_black_letters.append(letter)
+            elif len(letter) != 1 or not letter.isalpha():
+                print("please input a valid letter")
+            new_black_letters.append(letter.lower())
         except Exception as e:
             print("Error:", e)
 
@@ -160,12 +178,15 @@ def get_input():
 
     new_yellow_letters = {}
     while True:
+        letter = " "
         try:
             letter = input("input a yellow letter or type 'done' ")
             if letter == "done":
                 break
             elif letter == "quit":
                 sys.exit()
+            elif len(letter) != 1 or not letter.isalpha():
+                print("please input a valid letter")
             position = int(input("input yellow letter's position "))
             new_yellow_letters[position] = letter
         except Exception as e:
@@ -175,12 +196,15 @@ def get_input():
 
     new_green_letters = {}
     while True:
+        letter = " "
         try:
             letter = input("input a green letter or type 'done' ")
             if letter == "done":
                 break
             elif letter == "quit":
                 sys.exit()
+            elif len(letter) != 1 or not letter.isalpha():
+                print("please input a valid letter")
             position = int(input("input green letter's position "))
             new_green_letters[position] = letter
         except Exception as e:
@@ -207,7 +231,26 @@ if __name__ == "__main__":
         if (sys.argv[1] == "-v"):
             verbose = True
             print("Running in Verbose Mode\n")
+        if (sys.argv[1]) == "-h" or (sys.argv[1]) == "-help" or (sys.argv[1]) == "-man":
+            print("""
+            This is a Wordle Guessing program.
 
+            Input each black letter surrounded by quote marks, then type "done"
+            Input each yellow letter followed by its position, from '0' to '4.'
+            Then Input each new green letter followed by its position.
+
+            Wordle_guesser will return the optimal guess based on the Wordle
+            word list. 
+
+            Options:
+            -v : Verbose mode - displays the run number and the size of the reamaing
+                                word list.
+            -h, -help, -man:  - displays this help file.
+
+            """)
+            sys.exit()
+
+ 
     with open('wordle_word_list.txt') as f:
         Strings = f.read()
 
